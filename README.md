@@ -90,21 +90,3 @@ No matter how your program runs on your own machine, if it fails to compile/run 
 If you are non-CISE student who does not have a CISE account, google and consult the ithelp of CISE to get one account.
 If you use Eclipse, we suggest creating a project and importing the jar files (eg. HW1.jar) provided by each assignment into the project. After completing your work on the source files (keep all source files within the package cop5556fa17), you can export the package cop5556fa17 as a jar file for submission (remember to select the option of including source files in the jar package), so that it will have the same directory structure as the original jar file.
 Important!!! It is YOUR RESPONSIBILITY to submit the assignment in time. If you keep failing submission on Canvas, contact TAs and ithelp for help. DO NOT jammed submitting at last 10 min before deadline, it’s possible to fail submission at that time due to the server overloading. Start early, submit early. You can submit multiple times(not recommended), and we will only grade your last submission.
-
-A Quick Tutorial on How to Start Homework 1 in Eclipse: 
-Create a project (e.g. PLPHomework)
-File->New->Java Project
-
-After project created, right click on the src folder in the left sidebar, choose Import…
-
-Select General->Archive File
-
-Browse and choose your downloaded HW1.jar, make sure both Scanner.java and ScannerTest.java have been checked
-
-Add Junit Library to Build Path.
-Right Click on project, select Build Path->Add Libraries…
-
-In the list, choose JUnit
- 
-To Run the unit tests
-
