@@ -15,6 +15,7 @@ package cop5556fa17;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class Scanner {
 	
@@ -110,6 +111,8 @@ public class Scanner {
 		GOT_SLASH_STAR_STAR/* Got "/**" */;
 
 	}
+	
+	private HashMap<String, Kind> reservedKeywordMap = new HashMap<String, Kind>();
 
 	/** Class to represent Tokens. 
 	 * 
@@ -309,6 +312,33 @@ public class Scanner {
 		this.chars = Arrays.copyOf(inputString.toCharArray(), numChars + 1); // input string terminated with null char
 		chars[numChars] = EOFchar;
 		tokens = new ArrayList<Token>();
+		
+		reservedKeywordMap.put("x", Kind.KW_x);
+		reservedKeywordMap.put("X", Kind.KW_X);
+		reservedKeywordMap.put("y", Kind.KW_y);
+		reservedKeywordMap.put("Y", Kind.KW_Y);
+		reservedKeywordMap.put("r", Kind.KW_r);
+		reservedKeywordMap.put("R", Kind.KW_R);
+		reservedKeywordMap.put("a", Kind.KW_a);
+		reservedKeywordMap.put("A", Kind.KW_A);
+		reservedKeywordMap.put("Z", Kind.KW_Z);
+		reservedKeywordMap.put("DEF_X", Kind.KW_DEF_X);
+		reservedKeywordMap.put("DEF_Y", Kind.KW_DEF_Y);
+		reservedKeywordMap.put("SCREEN", Kind.KW_SCREEN);
+		reservedKeywordMap.put("cart_x", Kind.KW_cart_x);
+		reservedKeywordMap.put("cart_y", Kind.KW_cart_y);
+		reservedKeywordMap.put("polar_a", Kind.KW_polar_a);
+		reservedKeywordMap.put("polar_r", Kind.KW_polar_r);
+		reservedKeywordMap.put("abs", Kind.KW_abs);
+		reservedKeywordMap.put("sin", Kind.KW_sin);
+		reservedKeywordMap.put("cos", Kind.KW_cos);
+		reservedKeywordMap.put("atan", Kind.KW_atan);
+		reservedKeywordMap.put("log", Kind.KW_log);
+		reservedKeywordMap.put("image", Kind.KW_image);
+		reservedKeywordMap.put("int", Kind.KW_int);
+		reservedKeywordMap.put("boolean", Kind.KW_boolean);
+		reservedKeywordMap.put("url", Kind.KW_url);
+		reservedKeywordMap.put("file", Kind.KW_file);
 	}
 
 
@@ -514,6 +544,14 @@ public class Scanner {
 					state = State.START;
 					
 					String token = new String(chars, startPos, pos - startPos);
+					
+					try {
+						Integer.parseInt(token);
+					} catch (NumberFormatException e) {
+						throw new LexicalException("Not a valid Integer Literal", startPos);
+					}
+					
+					tokens.add(new Token(Kind.INTEGER_LITERAL, startPos, pos - startPos, line, posInLine));
 				}
 				break;
 			case GOT_LESS_THAN:
