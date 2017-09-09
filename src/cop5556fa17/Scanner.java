@@ -494,16 +494,61 @@ public class Scanner {
 				}
 				break;
 			case GOT_GREATER_THAN:
+				if (ch == '=') {
+					pos++;
+					posInLine++;
+					tokens.add(new Token(Kind.OP_GE, startPos, pos - startPos, line, posInLine));
+				} else {
+					tokens.add(new Token(Kind.OP_GT, startPos, pos - startPos, line, posInLine));
+				}
+				state = State.START;
 				break;
 			case GOT_IDENTIFIER:
 				break;
 			case GOT_INTEGER:
+				if (Character.isDigit(ch)) {
+					state = State.GOT_INTEGER;
+					pos++;
+					posInLine++;
+				} else {
+					state = State.START;
+					
+					String token = new String(chars, startPos, pos - startPos);
+				}
 				break;
 			case GOT_LESS_THAN:
+				if (ch == '-') {
+					pos++;
+					posInLine++;
+					tokens.add(new Token(Kind.OP_LARROW, startPos, pos - startPos, line, posInLine));
+				} else if (ch == '=') {
+					pos++;
+					posInLine++;
+					tokens.add(new Token(Kind.OP_LE, startPos, pos - startPos, line, posInLine));
+				} else {
+					tokens.add(new Token(Kind.OP_LT, startPos, pos - startPos, line, posInLine));
+				}
+				state = State.START;
 				break;
 			case GOT_MINUS:
+				if (ch == '>') {
+					pos++;
+					posInLine++;
+					tokens.add(new Token(Kind.OP_RARROW, startPos, pos - startPos, line, posInLine));
+				} else {
+					tokens.add(new Token(Kind.OP_MINUS, startPos, pos - startPos, line, posInLine));
+				}
+				state = State.START;
 				break;
 			case GOT_EXCLAMATION:
+				if (ch == '=') {
+					pos++;
+					posInLine++;
+					tokens.add(new Token(Kind.OP_EXCL, startPos, pos - startPos, line, posInLine));
+				} else {
+					tokens.add(new Token(Kind.OP_NEQ, startPos, pos - startPos, line, posInLine));
+				}
+				state = State.START;
 				break;
 			case GOT_SLASH_STAR:
 				if (ch == '*') {
@@ -525,10 +570,17 @@ public class Scanner {
 					pos++;
 					posInLine++;
 					state = State.START;
+				} else if (ch == EOFchar) {
+					state = State.START;
+				} else if (ch == '*') {
+					pos++;
+					posInLine++;
+				} else {
+					state = State.GOT_SLASH_STAR;
 				}
 				break;
 			default:
-				break;
+				
 			}
 		}
 		return this;
