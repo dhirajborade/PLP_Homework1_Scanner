@@ -108,7 +108,9 @@ public class Scanner {
 		GOT_BACKSLASH/* Got "/" */,
 		GOT_MINUS/* Got "-" */,
 		GOT_SLASH_STAR/* Got "/*" */,
-		GOT_SLASH_STAR_STAR/* Got "/**" */;
+		GOT_SLASH_STAR_STAR/* Got "/**" */,
+		GOT_INV_COM/* Got '"'*/,
+		GOT_CR/* Got '\r' */;
 
 	}
 	
@@ -357,16 +359,20 @@ public class Scanner {
 		int posInLine = 1;
 		int startPos = 0;
 		State state = State.START;
-		int ch;
 		
 		while (pos < chars.length) {
 			
-			ch = chars[pos];
+			char ch = chars[pos];
 
 			switch (state) {
 			case START:
 				startPos = pos;
 				if (Character.isWhitespace(ch)) {
+					if (ch == '\r') {
+						state = State.GOT_CR;
+						line++;
+						posInLine = 1;
+					}
 					if (ch == '\n') {
 						line++;
 						posInLine = 1;
@@ -382,6 +388,11 @@ public class Scanner {
 					break;
 				case '=':
 					state = State.GOT_ASSIGN;
+					pos++;
+					posInLine++;
+					break;
+				case '"':
+					state = State.GOT_INV_COM;
 					pos++;
 					posInLine++;
 					break;
@@ -498,8 +509,12 @@ public class Scanner {
 					} else {
 						throw new LexicalException("Illegal Character " + (char) ch + " encountered ", pos);
 					}
-					break;
 				}
+				break;
+			case GOT_CR:
+				pos++;
+				line++;
+				posInLine = 1;
 				break;
 			case GOT_ASSIGN:
 				if (ch == '=') {
@@ -534,6 +549,20 @@ public class Scanner {
 				state = State.START;
 				break;
 			case GOT_IDENTIFIER:
+				if (Character.isJavaIdentifierPart(ch)) {
+					state = State.GOT_IDENTIFIER;
+					pos++;
+					posInLine++;
+				} else {
+					state = State.START;
+					String subString = new String(chars, startPos, pos - startPos);
+					if (reservedKeywordMap.get(subString) == null) {
+						tokens.add(new Token(Kind.IDENTIFIER, startPos, pos - startPos, line, posInLine));
+					} else {
+						Kind type = reservedKeywordMap.get(subString);
+						tokens.add(new Token(type, startPos, pos - startPos, line, posInLine));
+					}
+				}
 				break;
 			case GOT_INTEGER:
 				if (Character.isDigit(ch)) {
