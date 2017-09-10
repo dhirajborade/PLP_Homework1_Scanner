@@ -554,7 +554,7 @@ public class Scanner {
 				}
 				break;
 			case GOT_DOUBLE_BACKSLASH:
-				if (ch == '\n' || ch == '\r') {
+				if (ch == '\n' || ch == '\r' || ch == EOFchar) {
 					state = State.START;
 				} else {
 					pos++;
@@ -572,7 +572,7 @@ public class Scanner {
 				state = State.START;
 				break;
 			case GOT_IDENTIFIER:
-				if (Character.isJavaIdentifierPart(ch)) {
+				if (Character.isJavaIdentifierPart(ch) && ch != EOFchar) {
 					state = State.GOT_IDENTIFIER;
 					pos++;
 					posInLine++;

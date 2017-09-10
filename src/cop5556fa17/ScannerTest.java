@@ -970,7 +970,7 @@ public class ScannerTest {
 			show(scanner);
 		} catch (LexicalException e) {
 			show(e);
-			assertEquals(4, e.getPos());
+			assertEquals(3, e.getPos());
 			throw e;
 		}
 	}
