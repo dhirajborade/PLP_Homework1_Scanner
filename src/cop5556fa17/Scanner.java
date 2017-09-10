@@ -604,6 +604,8 @@ public class Scanner {
 					posInLine++;
 				} else {
 					state = State.START;
+					pos++;
+					posInLine++;
 					//String subString = new String(chars, startPos, pos - startPos);
 					tokens.add(new Token(Kind.STRING_LITERAL, startPos, pos - startPos, line, startPosLine));
 				}
