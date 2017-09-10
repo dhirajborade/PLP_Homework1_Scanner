@@ -105,12 +105,10 @@ public class Scanner {
 		GOT_EXCLAMATION/* Got "!" */,
 		GOT_GREATER_THAN/* Got ">" */,
 		GOT_LESS_THAN/* Got "<" */,
-		GOT_BACKSLASH/* Got "/" */,
-		GOT_DOUBLE_BACKSLASH/* Got "//" */,
+		GOT_FORWARD_SLASH/* Got "/" */,
+		GOT_DOUBLE_FORWARD_SLASH/* Got "//" */,
 		GOT_MINUS/* Got "-" */,
 		GOT_STAR/* Got "*" */,
-		GOT_SLASH_STAR/* Got "/*" */,
-		GOT_SLASH_STAR_STAR/* Got "/**" */,
 		GOT_STRING_LITERAL/* Got '"'*/;
 
 	}
@@ -405,7 +403,7 @@ public class Scanner {
 					posInLine++;
 					break;
 				case '/':
-					state = State.GOT_BACKSLASH;
+					state = State.GOT_FORWARD_SLASH;
 					pos++;
 					posInLine++;
 					break;
@@ -515,7 +513,7 @@ public class Scanner {
 						pos++;
 						posInLine++;
 					} else {
-						throw new LexicalException("Illegal Character " + (char) ch + " encountered ", pos);
+						throw new LexicalException("Illegal Character " + ch + " encountered ", pos);
 					}
 				}
 				break;
@@ -539,21 +537,17 @@ public class Scanner {
 				}
 				state = State.START;
 				break;
-			case GOT_BACKSLASH:
-				if (ch == '*') {
+			case GOT_FORWARD_SLASH:
+				if (ch == '/') {
 					pos++;
 					posInLine++;
-					state = State.GOT_SLASH_STAR;
-				} else if (ch == '/') {
-					pos++;
-					posInLine++;
-					state = State.GOT_DOUBLE_BACKSLASH;
+					state = State.GOT_DOUBLE_FORWARD_SLASH;
 				} else {
 					state = State.START;
 					tokens.add(new Token(Kind.OP_DIV, startPos, pos - startPos, line, startPosLine));
 				}
 				break;
-			case GOT_DOUBLE_BACKSLASH:
+			case GOT_DOUBLE_FORWARD_SLASH:
 				if (ch == '\n' || ch == '\r' || ch == EOFchar) {
 					state = State.START;
 				} else {
@@ -572,7 +566,9 @@ public class Scanner {
 				state = State.START;
 				break;
 			case GOT_IDENTIFIER:
-				if (Character.isJavaIdentifierPart(ch) && ch != EOFchar) {
+				if (ch == '\b' || ch == '\f' || ch == '\"' || ch == '\'' || ch == '\\') {
+					throw new LexicalException("Escape Sequence encountered within an Identifier", pos);
+				} else if (Character.isJavaIdentifierPart(ch) && ch != EOFchar) {
 					state = State.GOT_IDENTIFIER;
 					pos++;
 					posInLine++;
@@ -594,10 +590,10 @@ public class Scanner {
 							pos++;
 							posInLine++;
 						} else if (!(chars[pos + 1] == 'b' || chars[pos + 1] == 't' || chars[pos + 1] == 'n' || chars[pos + 1] == 'f' || chars[pos + 1] == 'r' | chars[pos + 1] == '\"' | chars[pos + 1] == '\'' | chars[pos + 1] == '\\')) {
-							throw new LexicalException("Illegal Character " + (char) ch + " encountered ", pos);
+							throw new LexicalException("Illegal escape sequence encountered within the String Literal", pos);
 						}
 					} else if (ch == '\n' || ch == '\r' || ch == EOFchar) {
-						throw new LexicalException("Illegal Character " + (char) ch + " encountered ", pos);
+						throw new LexicalException("String Literal is not completed with proper closing inverted commas", pos);
 					}
 					state = State.GOT_STRING_LITERAL;
 					pos++;
@@ -662,35 +658,6 @@ public class Scanner {
 					tokens.add(new Token(Kind.OP_EXCL, startPos, pos - startPos, line, startPosLine));
 				}
 				state = State.START;
-				break;
-			case GOT_SLASH_STAR:
-				if (ch == '*') {
-					pos++;
-					posInLine++;
-					state = State.GOT_SLASH_STAR_STAR;
-				} else if (ch == EOFchar) {
-					state = State.START;
-				} else {
-					if (ch == '\n') {
-						line++;
-						posInLine = 1;
-					}
-					pos++;
-				}
-				break;
-			case GOT_SLASH_STAR_STAR:
-				if (ch == '/') {
-					pos++;
-					posInLine++;
-					state = State.START;
-				} else if (ch == EOFchar) {
-					state = State.START;
-				} else if (ch == '*') {
-					pos++;
-					posInLine++;
-				} else {
-					state = State.GOT_SLASH_STAR;
-				}
 				break;
 			default:
 				
