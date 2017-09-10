@@ -527,6 +527,7 @@ public class Scanner {
 				} else {
 					tokens.add(new Token(Kind.OP_TIMES, startPos, 1, line, startPosLine));
 				}
+				state = State.START;
 				break;
 			case GOT_ASSIGN:
 				if (ch == '=') {
