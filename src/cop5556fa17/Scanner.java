@@ -108,6 +108,7 @@ public class Scanner {
 		GOT_BACKSLASH/* Got "/" */,
 		GOT_DOUBLE_BACKSLASH/* Got "//" */,
 		GOT_MINUS/* Got "-" */,
+		GOT_STAR/* Got "*" */,
 		GOT_SLASH_STAR/* Got "/*" */,
 		GOT_SLASH_STAR_STAR/* Got "/**" */,
 		GOT_STRING_LITERAL/* Got '"'*/;
@@ -315,8 +316,8 @@ public class Scanner {
 		chars[numChars] = EOFchar;
 		tokens = new ArrayList<Token>();
 		
-		reservedKeywordMap.put("TRUE", Kind.BOOLEAN_LITERAL);
-		reservedKeywordMap.put("FALSE", Kind.BOOLEAN_LITERAL);
+		reservedKeywordMap.put("true", Kind.BOOLEAN_LITERAL);
+		reservedKeywordMap.put("false", Kind.BOOLEAN_LITERAL);
 		reservedKeywordMap.put("x", Kind.KW_x);
 		reservedKeywordMap.put("X", Kind.KW_X);
 		reservedKeywordMap.put("y", Kind.KW_y);
@@ -454,7 +455,7 @@ public class Scanner {
 					posInLine++;
 					break;
 				case '*':
-					state = State.GOT_SLASH_STAR;
+					state = State.GOT_STAR;
 					pos++;
 					posInLine++;
 					break;
@@ -500,7 +501,7 @@ public class Scanner {
 					break;
 				default:
 					if (Character.isDigit(ch)) {
-						if (ch == 0) {
+						if (ch == '0') {
 							pos++;
 							posInLine++;
 							tokens.add(new Token(Kind.INTEGER_LITERAL, startPos, 1, line, startPosLine));
@@ -516,6 +517,15 @@ public class Scanner {
 					} else {
 						throw new LexicalException("Illegal Character " + (char) ch + " encountered ", pos);
 					}
+				}
+				break;
+			case GOT_STAR:
+				if (ch == '*') {
+					pos++;
+					posInLine++;
+					tokens.add(new Token(Kind.OP_POWER, startPos, pos - startPos, line, startPosLine));
+				} else {
+					tokens.add(new Token(Kind.OP_TIMES, startPos, 1, line, startPosLine));
 				}
 				break;
 			case GOT_ASSIGN:

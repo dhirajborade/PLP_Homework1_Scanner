@@ -325,7 +325,7 @@ public class ScannerTest {
 	// The following test case tests TIMES and POWER operator
 	@Test
 	public void MULTest() throws LexicalException {
-		String input = "%++@@*=";
+		String input = "%++*@@**=";
 		Scanner scanner = new Scanner(input).scan();
 		show(input);
 		show(scanner);
