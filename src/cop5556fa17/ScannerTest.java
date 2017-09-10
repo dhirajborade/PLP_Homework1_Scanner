@@ -133,7 +133,7 @@ public class ScannerTest {
 	
 	@Test
 	public void testCarrageReturn() throws LexicalException {
-		String input = ";;\r\n;;";
+		String input = ";;\n;;";
 		Scanner scanner = new Scanner(input).scan();
 		show(input);
 		show(scanner);
@@ -163,19 +163,19 @@ public class ScannerTest {
 	 * 
 	 * @throws LexicalException
 	 */
-//	@Test
-//	public void failUnclosedStringLiteral() throws LexicalException {
-//		String input = "\" greetings  ";
-//		show(input);
-//		thrown.expect(LexicalException.class);  //Tell JUnit to expect a LexicalException
-//		try {
-//			new Scanner(input).scan();
-//		} catch (LexicalException e) {  //
-//			show(e);
-//			assertEquals(13,e.getPos());
-//			throw e;
-//		}
-//	}
+	@Test
+	public void failUnclosedStringLiteral() throws LexicalException {
+		String input = "\" greetings  ";
+		show(input);
+		thrown.expect(LexicalException.class);  //Tell JUnit to expect a LexicalException
+		try {
+			new Scanner(input).scan();
+		} catch (LexicalException e) {  //
+			show(e);
+			assertEquals(13,e.getPos());
+			throw e;
+		}
+	}
 
 
 }

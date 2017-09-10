@@ -109,8 +109,7 @@ public class Scanner {
 		GOT_MINUS/* Got "-" */,
 		GOT_SLASH_STAR/* Got "/*" */,
 		GOT_SLASH_STAR_STAR/* Got "/**" */,
-		GOT_INV_COM/* Got '"'*/,
-		GOT_CR/* Got '\r' */;
+		GOT_STRING_LITERAL/* Got '"'*/;
 
 	}
 	
@@ -369,11 +368,12 @@ public class Scanner {
 				startPos = pos;
 				if (Character.isWhitespace(ch)) {
 					if (ch == '\r') {
-						state = State.GOT_CR;
+						if (chars[pos + 1] == '\n') {
+							pos++;
+						}
 						line++;
 						posInLine = 1;
-					}
-					if (ch == '\n') {
+					} else if (ch == '\n') {
 						line++;
 						posInLine = 1;
 					}
@@ -392,7 +392,7 @@ public class Scanner {
 					posInLine++;
 					break;
 				case '"':
-					state = State.GOT_INV_COM;
+					state = State.GOT_STRING_LITERAL;
 					pos++;
 					posInLine++;
 					break;
@@ -511,11 +511,6 @@ public class Scanner {
 					}
 				}
 				break;
-			case GOT_CR:
-				pos++;
-				line++;
-				posInLine = 1;
-				break;
 			case GOT_ASSIGN:
 				if (ch == '=') {
 					pos++;
@@ -562,6 +557,27 @@ public class Scanner {
 						Kind type = reservedKeywordMap.get(subString);
 						tokens.add(new Token(type, startPos, pos - startPos, line, posInLine));
 					}
+				}
+				break;
+			case GOT_STRING_LITERAL:
+				if (ch != '"' || ch != EOFchar) {
+					if (ch == '\\') {
+						if (chars[pos + 1] == 'b' || chars[pos + 1] == 't' || chars[pos + 1] == 'n' || chars[pos + 1] == 'f' || chars[pos + 1] == 'r' | chars[pos + 1] == '\"' | chars[pos + 1] == '\'' | chars[pos + 1] == '\\') {
+							pos++;
+							posInLine++;
+						} else if (!(chars[pos + 1] == 'b' || chars[pos + 1] == 't' || chars[pos + 1] == 'n' || chars[pos + 1] == 'f' || chars[pos + 1] == 'r' | chars[pos + 1] == '\"' | chars[pos + 1] == '\'' | chars[pos + 1] == '\\')) {
+							throw new LexicalException("Illegal Character \" + (char) ch + \" encountered ", pos);
+						}
+					} else if (ch == '\n' || ch == '\r' || ch == '"' || ch == '\\') {
+						throw new LexicalException("Illegal Character \" + (char) ch + \" encountered ", pos);
+					}
+					state = State.GOT_STRING_LITERAL;
+					pos++;
+					posInLine++;
+				} else {
+					state = State.START;
+					//String subString = new String(chars, startPos, pos - startPos);
+					tokens.add(new Token(Kind.STRING_LITERAL, startPos, pos - startPos, line, posInLine));
 				}
 				break;
 			case GOT_INTEGER:
