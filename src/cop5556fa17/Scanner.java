@@ -106,6 +106,7 @@ public class Scanner {
 		GOT_GREATER_THAN/* Got ">" */,
 		GOT_LESS_THAN/* Got "<" */,
 		GOT_BACKSLASH/* Got "/" */,
+		GOT_DOUBLE_BACKSLASH/* Got "//" */,
 		GOT_MINUS/* Got "-" */,
 		GOT_SLASH_STAR/* Got "/*" */,
 		GOT_SLASH_STAR_STAR/* Got "/**" */,
@@ -314,6 +315,8 @@ public class Scanner {
 		chars[numChars] = EOFchar;
 		tokens = new ArrayList<Token>();
 		
+		reservedKeywordMap.put("TRUE", Kind.BOOLEAN_LITERAL);
+		reservedKeywordMap.put("FALSE", Kind.BOOLEAN_LITERAL);
 		reservedKeywordMap.put("x", Kind.KW_x);
 		reservedKeywordMap.put("X", Kind.KW_X);
 		reservedKeywordMap.put("y", Kind.KW_y);
@@ -357,6 +360,7 @@ public class Scanner {
 		int line = 1;
 		int posInLine = 1;
 		int startPos = 0;
+		int startPosLine = 1;
 		State state = State.START;
 		
 		while (pos < chars.length) {
@@ -366,6 +370,7 @@ public class Scanner {
 			switch (state) {
 			case START:
 				startPos = pos;
+				startPosLine = posInLine;
 				if (Character.isWhitespace(ch)) {
 					if (ch == '\r') {
 						if (chars[pos + 1] == '\n') {
@@ -376,13 +381,15 @@ public class Scanner {
 					} else if (ch == '\n') {
 						line++;
 						posInLine = 1;
+					} else {
+						posInLine++;
 					}
 					pos++;
 					break;
 				}
 				switch (ch) {
 				case EOFchar:
-					tokens.add(new Token(Kind.EOF, startPos, 0, line, posInLine));
+					tokens.add(new Token(Kind.EOF, startPos, 0, line, startPosLine));
 					pos++;
 					posInLine++;
 					break;
@@ -422,27 +429,27 @@ public class Scanner {
 					posInLine++;
 					break;
 				case '?':
-					tokens.add(new Token(Kind.OP_Q, startPos, 1, line, posInLine));
+					tokens.add(new Token(Kind.OP_Q, startPos, 1, line, startPosLine));
 					pos++;
 					posInLine++;
 					break;
 				case ':':
-					tokens.add(new Token(Kind.OP_COLON, startPos, 1, line, posInLine));
+					tokens.add(new Token(Kind.OP_COLON, startPos, 1, line, startPosLine));
 					pos++;
 					posInLine++;
 					break;
 				case '&':
-					tokens.add(new Token(Kind.OP_AND, startPos, 1, line, posInLine));
+					tokens.add(new Token(Kind.OP_AND, startPos, 1, line, startPosLine));
 					pos++;
 					posInLine++;
 					break;
 				case '|':
-					tokens.add(new Token(Kind.OP_OR, startPos, 1, line, posInLine));
+					tokens.add(new Token(Kind.OP_OR, startPos, 1, line, startPosLine));
 					pos++;
 					posInLine++;
 					break;
 				case '+':
-					tokens.add(new Token(Kind.OP_PLUS, startPos, 1, line, posInLine));
+					tokens.add(new Token(Kind.OP_PLUS, startPos, 1, line, startPosLine));
 					pos++;
 					posInLine++;
 					break;
@@ -452,42 +459,42 @@ public class Scanner {
 					posInLine++;
 					break;
 				case '%':
-					tokens.add(new Token(Kind.OP_MOD, startPos, 1, line, posInLine));
+					tokens.add(new Token(Kind.OP_MOD, startPos, 1, line, startPosLine));
 					pos++;
 					posInLine++;
 					break;
 				case '@':
-					tokens.add(new Token(Kind.OP_AT, startPos, 1, line, posInLine));
+					tokens.add(new Token(Kind.OP_AT, startPos, 1, line, startPosLine));
 					pos++;
 					posInLine++;
 					break;
 				case '(':
-					tokens.add(new Token(Kind.LPAREN, startPos, 1, line, posInLine));
+					tokens.add(new Token(Kind.LPAREN, startPos, 1, line, startPosLine));
 					pos++;
 					posInLine++;
 					break;
 				case ')':
-					tokens.add(new Token(Kind.RPAREN, startPos, 1, line, posInLine));
+					tokens.add(new Token(Kind.RPAREN, startPos, 1, line, startPosLine));
 					pos++;
 					posInLine++;
 					break;
 				case '[':
-					tokens.add(new Token(Kind.LSQUARE, startPos, 1, line, posInLine));
+					tokens.add(new Token(Kind.LSQUARE, startPos, 1, line, startPosLine));
 					pos++;
 					posInLine++;
 					break;
 				case ']':
-					tokens.add(new Token(Kind.RSQUARE, startPos, 1, line, posInLine));
+					tokens.add(new Token(Kind.RSQUARE, startPos, 1, line, startPosLine));
 					pos++;
 					posInLine++;
 					break;
 				case ';':
-					tokens.add(new Token(Kind.SEMI, startPos, 1, line, posInLine));
+					tokens.add(new Token(Kind.SEMI, startPos, 1, line, startPosLine));
 					pos++;
 					posInLine++;
 					break;
 				case ',':
-					tokens.add(new Token(Kind.COMMA, startPos, 1, line, posInLine));
+					tokens.add(new Token(Kind.COMMA, startPos, 1, line, startPosLine));
 					pos++;
 					posInLine++;
 					break;
@@ -496,7 +503,7 @@ public class Scanner {
 						if (ch == 0) {
 							pos++;
 							posInLine++;
-							tokens.add(new Token(Kind.INTEGER_LITERAL, startPos, pos - startPos, line, posInLine));
+							tokens.add(new Token(Kind.INTEGER_LITERAL, startPos, 1, line, startPosLine));
 						} else {
 							state = State.GOT_INTEGER;
 							pos++;
@@ -515,11 +522,9 @@ public class Scanner {
 				if (ch == '=') {
 					pos++;
 					posInLine++;
-					tokens.add(new Token(Kind.OP_EQ, startPos, pos - startPos, line, posInLine));
+					tokens.add(new Token(Kind.OP_EQ, startPos, pos - startPos, line, startPosLine));
 				} else {
-					pos++;
-					posInLine++;
-					tokens.add(new Token(Kind.OP_ASSIGN, startPos, pos - startPos, line, posInLine));
+					tokens.add(new Token(Kind.OP_ASSIGN, startPos, pos - startPos, line, startPosLine));
 				}
 				state = State.START;
 				break;
@@ -528,18 +533,30 @@ public class Scanner {
 					pos++;
 					posInLine++;
 					state = State.GOT_SLASH_STAR;
+				} else if (ch == '/') {
+					pos++;
+					posInLine++;
+					state = State.GOT_DOUBLE_BACKSLASH;
 				} else {
 					state = State.START;
-					tokens.add(new Token(Kind.OP_DIV, startPos, pos - startPos, line, posInLine));
+					tokens.add(new Token(Kind.OP_DIV, startPos, pos - startPos, line, startPosLine));
+				}
+				break;
+			case GOT_DOUBLE_BACKSLASH:
+				if (ch == '\n' || ch == '\r') {
+					state = State.START;
+				} else {
+					pos++;
+					posInLine++;
 				}
 				break;
 			case GOT_GREATER_THAN:
 				if (ch == '=') {
 					pos++;
 					posInLine++;
-					tokens.add(new Token(Kind.OP_GE, startPos, pos - startPos, line, posInLine));
+					tokens.add(new Token(Kind.OP_GE, startPos, pos - startPos, line, startPosLine));
 				} else {
-					tokens.add(new Token(Kind.OP_GT, startPos, pos - startPos, line, posInLine));
+					tokens.add(new Token(Kind.OP_GT, startPos, pos - startPos, line, startPosLine));
 				}
 				state = State.START;
 				break;
@@ -552,24 +569,24 @@ public class Scanner {
 					state = State.START;
 					String subString = new String(chars, startPos, pos - startPos);
 					if (reservedKeywordMap.get(subString) == null) {
-						tokens.add(new Token(Kind.IDENTIFIER, startPos, pos - startPos, line, posInLine));
+						tokens.add(new Token(Kind.IDENTIFIER, startPos, pos - startPos, line, startPosLine));
 					} else {
 						Kind type = reservedKeywordMap.get(subString);
-						tokens.add(new Token(type, startPos, pos - startPos, line, posInLine));
+						tokens.add(new Token(type, startPos, pos - startPos, line, startPosLine));
 					}
 				}
 				break;
 			case GOT_STRING_LITERAL:
-				if (ch != '"' || ch != EOFchar) {
+				if (ch != '"') {
 					if (ch == '\\') {
 						if (chars[pos + 1] == 'b' || chars[pos + 1] == 't' || chars[pos + 1] == 'n' || chars[pos + 1] == 'f' || chars[pos + 1] == 'r' | chars[pos + 1] == '\"' | chars[pos + 1] == '\'' | chars[pos + 1] == '\\') {
 							pos++;
 							posInLine++;
 						} else if (!(chars[pos + 1] == 'b' || chars[pos + 1] == 't' || chars[pos + 1] == 'n' || chars[pos + 1] == 'f' || chars[pos + 1] == 'r' | chars[pos + 1] == '\"' | chars[pos + 1] == '\'' | chars[pos + 1] == '\\')) {
-							throw new LexicalException("Illegal Character \" + (char) ch + \" encountered ", pos);
+							throw new LexicalException("Illegal Character " + (char) ch + " encountered ", pos);
 						}
-					} else if (ch == '\n' || ch == '\r' || ch == '"' || ch == '\\') {
-						throw new LexicalException("Illegal Character \" + (char) ch + \" encountered ", pos);
+					} else if (ch == '\n' || ch == '\r' || ch == EOFchar) {
+						throw new LexicalException("Illegal Character " + (char) ch + " encountered ", pos);
 					}
 					state = State.GOT_STRING_LITERAL;
 					pos++;
@@ -577,7 +594,7 @@ public class Scanner {
 				} else {
 					state = State.START;
 					//String subString = new String(chars, startPos, pos - startPos);
-					tokens.add(new Token(Kind.STRING_LITERAL, startPos, pos - startPos, line, posInLine));
+					tokens.add(new Token(Kind.STRING_LITERAL, startPos, pos - startPos, line, startPosLine));
 				}
 				break;
 			case GOT_INTEGER:
@@ -596,20 +613,20 @@ public class Scanner {
 						throw new LexicalException("Not a valid Integer Literal", startPos);
 					}
 					
-					tokens.add(new Token(Kind.INTEGER_LITERAL, startPos, pos - startPos, line, posInLine));
+					tokens.add(new Token(Kind.INTEGER_LITERAL, startPos, pos - startPos, line, startPosLine));
 				}
 				break;
 			case GOT_LESS_THAN:
 				if (ch == '-') {
 					pos++;
 					posInLine++;
-					tokens.add(new Token(Kind.OP_LARROW, startPos, pos - startPos, line, posInLine));
+					tokens.add(new Token(Kind.OP_LARROW, startPos, pos - startPos, line, startPosLine));
 				} else if (ch == '=') {
 					pos++;
 					posInLine++;
-					tokens.add(new Token(Kind.OP_LE, startPos, pos - startPos, line, posInLine));
+					tokens.add(new Token(Kind.OP_LE, startPos, pos - startPos, line, startPosLine));
 				} else {
-					tokens.add(new Token(Kind.OP_LT, startPos, pos - startPos, line, posInLine));
+					tokens.add(new Token(Kind.OP_LT, startPos, pos - startPos, line, startPosLine));
 				}
 				state = State.START;
 				break;
@@ -617,9 +634,9 @@ public class Scanner {
 				if (ch == '>') {
 					pos++;
 					posInLine++;
-					tokens.add(new Token(Kind.OP_RARROW, startPos, pos - startPos, line, posInLine));
+					tokens.add(new Token(Kind.OP_RARROW, startPos, pos - startPos, line, startPosLine));
 				} else {
-					tokens.add(new Token(Kind.OP_MINUS, startPos, pos - startPos, line, posInLine));
+					tokens.add(new Token(Kind.OP_MINUS, startPos, pos - startPos, line, startPosLine));
 				}
 				state = State.START;
 				break;
@@ -627,9 +644,9 @@ public class Scanner {
 				if (ch == '=') {
 					pos++;
 					posInLine++;
-					tokens.add(new Token(Kind.OP_EXCL, startPos, pos - startPos, line, posInLine));
+					tokens.add(new Token(Kind.OP_NEQ, startPos, pos - startPos, line, startPosLine));
 				} else {
-					tokens.add(new Token(Kind.OP_NEQ, startPos, pos - startPos, line, posInLine));
+					tokens.add(new Token(Kind.OP_EXCL, startPos, pos - startPos, line, startPosLine));
 				}
 				state = State.START;
 				break;
