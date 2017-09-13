@@ -590,9 +590,11 @@ public class Scanner {
 							pos++;
 							posInLine++;
 						} else if (!(chars[pos + 1] == 'b' || chars[pos + 1] == 't' || chars[pos + 1] == 'n' || chars[pos + 1] == 'f' || chars[pos + 1] == 'r' | chars[pos + 1] == '\"' | chars[pos + 1] == '\'' | chars[pos + 1] == '\\')) {
-							throw new LexicalException("Illegal escape sequence encountered within the String Literal", pos);
+							throw new LexicalException("Illegal escape sequence encountered within the String Literal", pos + 1);
 						}
-					} else if (ch == '\n' || ch == '\r' || ch == EOFchar) {
+					} else if (ch == '\n' || ch == '\r') {
+						throw new LexicalException("Line Feed or Carriage Return encountered within String Literal", pos);
+					} else if (ch == EOFchar) {
 						throw new LexicalException("String Literal is not completed with proper closing inverted commas", pos);
 					}
 					state = State.GOT_STRING_LITERAL;

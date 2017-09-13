@@ -543,7 +543,7 @@ public class ScannerTest {
 			show(scanner);
 		} catch (LexicalException e) {
 			show(e);
-			assertEquals(3, e.getPos());
+			assertEquals(4, e.getPos());
 			throw e;
 		}
 	}
@@ -572,7 +572,7 @@ public class ScannerTest {
 			show(scanner);
 		} catch (LexicalException e) {
 			show(e);
-			assertEquals(2, e.getPos());
+			assertEquals(3, e.getPos());
 			throw e;
 		}
 	}
@@ -599,7 +599,7 @@ public class ScannerTest {
 			show(scanner);
 		} catch (LexicalException e) { //
 			show(e);
-			assertEquals(43, e.getPos());
+			assertEquals(44, e.getPos());
 			throw e;
 		}
 	}
@@ -617,5 +617,4 @@ public class ScannerTest {
 			throw e;
 		}
 	}
-
 }
